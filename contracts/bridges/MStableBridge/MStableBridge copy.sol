@@ -111,8 +111,8 @@ contract MStableBridge is IDefiBridge {
         creditsIssued
       );
     } else {
-        uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemUnderlying(totalInputValue, msg.sender); // Deposit into save
-        uint256 outputAmount = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, redeemedMUSD, address(this)); // Minting
+        uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemUnderlying(totalInputValue, msg.sender); // Redeem mUSD from save
+        uint256 outputAmount = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, redeemedMUSD, address(this)); // Redeem bAsset from mUSD
         ERC20(bAsset).approve(
           rollupProcessor,
           outputAmount
