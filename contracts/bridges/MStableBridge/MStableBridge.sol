@@ -6,11 +6,11 @@ pragma experimental ABIEncoderV2;
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { IVault, IAsset, PoolSpecialization } from "../../interfaces/IVault.sol";
-import { IPool } from "../../interfaces/IPool.sol";
 import { ITranche } from "../../interfaces/ITranche.sol";
 import { IERC20Permit, IERC20 } from "../../interfaces/IERC20Permit.sol";
 import { IWrappedPosition } from "../../interfaces/IWrappedPosition.sol";
 import { IRollupProcessor } from "../../interfaces/IRollupProcessor.sol";
+import { IMStableSaveWrapper } from "../../interfaces/IMStableSaveWrapper.sol";
 
 import { IDefiBridge } from "../../interfaces/IDefiBridge.sol";
 
@@ -37,29 +37,19 @@ contract MStableBridge is IDefiBridge {
   // cache of all of our Defi interactions. keyed on nonce
   mapping(uint256 => Interaction) private interactions;
 
-  // cahce of all pools we are able to interact with
-  mapping(uint256 => Pool) private pools;
-
   // the aztec rollup processor contract
   address public immutable rollupProcessor;
-
-  uint64[] private heap;
-  uint32[] private expiries;
-  mapping(uint64 => uint256[]) private expiryToNonce;
+  address public saveWrapper;
+  address public boostedSavingsVault;
 
   constructor(
     address _rollupProcessor,
-
+    address _saveWrapper,
+    address _boostedSavingsVault,
   ) {
     rollupProcessor = _rollupProcessor;
-  }
-
-  function hashAssetAndExpiry(address asset, uint256 expiry)
-    internal
-    pure
-    returns (uint256)
-  {
-    return uint256(keccak256(abi.encodePacked(asset, expiry)));
+    saveWrapper = _saveWrapper;
+    boostedSavingsVault = _boostedSavingsVault;
   }
 
   // convert the input asset to the output asset
@@ -99,62 +89,27 @@ contract MStableBridge is IDefiBridge {
     );
     // operation is asynchronous
     isAsync = false;
-    // retrieve the appropriate pool for this interaction and verify that it exists
-    Pool storage pool = pools[
-      hashAssetAndExpiry(inputAssetA.erc20Address, auxData)
-    ];
-    require(pool.trancheAddress != address(0), "MStableBridge: POOL_NOT_FOUND");
-    // CHECK INPUT ASSET != ETH
-    // SHOULD WE CONVERT ETH -> WETH
 
     // approve the transfer of tokens to the balancer address
     ERC20(inputAssetA.erc20Address).approve(
-      address(balancerAddress),
+      address(saveWrapper),
       totalInputValue
     );
-    // execute the swap on balancer
-    uint256 principalTokensAmount = IVault(balancerAddress).swap(
-      IVault.SingleSwap({
-        poolId: pool.poolId,
-        kind: IVault.SwapKind.GIVEN_IN,
-        assetIn: IAsset(inputAssetA.erc20Address),
-        assetOut: IAsset(pool.trancheAddress),
-        amount: totalInputValue,
-        userData: "0x00"
-      }),
-      IVault.FundManagement({
-        sender: address(this), // the bridge has already received the tokens from the rollup so it owns totalInputValue of inputAssetA
-        fromInternalBalance: false,
-        recipient: payable(address(this)),
-        toInternalBalance: false
-      }),
-      totalInputValue, // discuss with ELement on the likely slippage for a large trade e.g $1M Dai
-      block.timestamp
-    );
-    console.log(
-      "Received %s tokens for input of %s",
-      principalTokensAmount,
+    // execute the save on mStable via the save wrapper
+    IMStableSaveWrapper(saveWrapper).saveViaMint(
+      address(0xe2f2a5C287993345a840Db3B0845fbC70f5935a5),
+      inputAssetA.erc20Address,
+      address(0x30647a72dc82d7fbb1123ea74716ab8a317eac19),
+      _boostedSavingsVault,
+      totalInputValue,
+      totalInputValue,
+      true
+    ;
+
+    ERC20(0x30647a72dc82d7fbb1123ea74716ab8a317eac19).approve(
+      rollupProcessor,
       totalInputValue
     );
-    // store the tranche that underpins our interaction, the expiry and the number of received tokens against the nonce
-    interactions[interactionNonce] = Interaction(
-      pool.trancheAddress,
-      auxData,
-      principalTokensAmount,
-      false
-    );
-    // add the nonce and expiry to our expiry heap
-    addNonceAndExpiry(interactionNonce, auxData);
-    // check the heap to see if we can finalise an expired transaction
-    (
-      bool expiryAvailable,
-      uint64 expiry,
-      uint256 nonce
-    ) = checkNextArrayExpiry(); //checkNextExpiry();
-    if (expiryAvailable) {
-      // another position is available for finalising, inform the rollup contract
-      IRollupProcessor(rollupProcessor).processAsyncDeFiInteraction(nonce);
-    }
   }
 
   function canFinalise(
