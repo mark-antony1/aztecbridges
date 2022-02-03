@@ -41,17 +41,11 @@ contract MStableBridge is IDefiBridge {
 
   // the aztec rollup processor contract
   address public immutable rollupProcessor;
-  address public saveWrapper;
-  address public boostedSavingsVault;
 
   constructor(
     address _rollupProcessor,
-    address _saveWrapper,
-    address _boostedSavingsVault,
   ) {
     rollupProcessor = _rollupProcessor;
-    saveWrapper = _saveWrapper;
-    boostedSavingsVault = _boostedSavingsVault;
   }
 
   // convert the input asset to the output asset
@@ -99,7 +93,7 @@ contract MStableBridge is IDefiBridge {
     if outputAssetA.erc2Address == imUSD {
       // approve the transfer of tokens to the balancer address
       ERC20(inputAssetA.erc20Address).approve(
-        address(saveWrapper),
+        address(mUSD),
         totalInputValue
       );
       uint256 massetsMinted = IMStableAsset(mUSD).mint(bAsset, totalInputValue, totalInputValue, address(this)); // Minting
