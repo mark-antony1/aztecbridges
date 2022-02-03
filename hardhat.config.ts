@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
       forking: {
         url:
           process.env.MAINNET_RPC_HOST ||
-          "https://mainnet.infura.io/v3/9928b52099854248b3a096be07a6b23c",
+          "https://mainnet.infura.io/v3/c33686bea7bf4d59ac1f09493023f32b",
         blockNumber: getBlockNumber(),
       },
     },

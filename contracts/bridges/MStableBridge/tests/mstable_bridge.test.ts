@@ -13,9 +13,8 @@ const toBytes32 = (bn: BigNumber) => {
 };
 
 const setStorageAt = async (address: string, index: string, value: string) => {
-  const newIndex = 1
   console.log("hardhat storage", address, index, value)
-  await ethers.provider.send("hardhat_setStorageAt", [address, newIndex, value]);
+  await ethers.provider.send("hardhat_setStorageAt", [address, index, value]);
   console.log("evm mine")
   await ethers.provider.send("evm_mine", []); // Just mines to the next block
 };
@@ -84,6 +83,37 @@ describe("defi bridge", function () {
       1n,
       100n
     );
+  });
+
+  it("should call convert successfully from imUSD -> DAI on the DeFi bridge", async () => {
+    const inputAsset = {
+      assetId: 2,
+      erc20Address: imUSDAddress,
+      assetType: AztecAssetType.ERC20,
+    };
+    const outputAsset = {
+      assetId: 1,
+      erc20Address: daiAddress,
+      assetType: AztecAssetType.ERC20,
+    };
+    
+    const locallyManipulatedBalance = ethers.utils.parseUnits("10000000");
+    const slot = 51;
+    // Get storage slot index
+    const index = ethers.utils.solidityKeccak256(
+      ["uint256", "uint256"],
+      [defiBridgeProxy.address, slot] // key, slot
+    );
+    
+    console.log("set storage")
+    await setStorageAt(
+      imUSDAddress,
+      index,
+      toBytes32(locallyManipulatedBalance).toString()
+    );
+    console.log('storage set')
+    // const txn = await powahContract.balanceOf(defiBridgeProxy.address);
+    const quantityOfIMUSDToDeposit = 1n * 10n ** 21n;
 
     const imUSDinputAsset = {
       assetId: 2,
@@ -96,7 +126,6 @@ describe("defi bridge", function () {
       assetType: AztecAssetType.ERC20,
     };
 
-    console.log("2nd convert")
 
     await rollupContract.convert(
       signer,
@@ -105,9 +134,11 @@ describe("defi bridge", function () {
       {},
       daiOutputAsset,
       {},
-      quantityOfDaiToDeposit,
+      100000n,
       2n,
       100n
     );
+    
+
   });
 });
