@@ -81,6 +81,7 @@ export class RollupProcessor {
     auxInputData: bigint,
     options: SendTxOptions = {}
   ) {
+    console.log("in convert call")
     const contract = new Contract(
       this.contract.address,
       this.contract.interface,
@@ -96,6 +97,11 @@ export class RollupProcessor {
 
     */
 
+    console.log("real convert call")
+    console.log("bridgeAddress", bridgeAddress, "totalInputValue", totalInputValue, "interactionNonce", interactionNonce, "auxInputData", auxInputData)
+    console.log("inputAssetA", inputAssetA, "inputAssetB", inputAssetB)
+    console.log("outputAssetA", outputAssetA, "outputAssetB", outputAssetB)
+    console.log("gasLimit", gasLimit, "gasPrice", gasPrice)
     const tx = await contract.convert(
       bridgeAddress,
       assetToArray(inputAssetA),
@@ -107,6 +113,7 @@ export class RollupProcessor {
       auxInputData,
       { gasLimit, gasPrice }
     );
+    console.log("after real convert call")
     const receipt = await tx.wait();
 
     const parsedLogs = receipt.logs

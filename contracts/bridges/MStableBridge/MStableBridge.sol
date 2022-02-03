@@ -16,9 +16,7 @@ contract MStableBridge is IDefiBridge {
   // the aztec rollup processor contract
   address public immutable rollupProcessor;
 
-  constructor(
-    address _rollupProcessor
-  ) {
+  constructor(address _rollupProcessor) {
     rollupProcessor = _rollupProcessor;
   }
 
@@ -42,8 +40,10 @@ contract MStableBridge is IDefiBridge {
       bool isAsync
     )
   {
+    console.log("In contract");
     // ### INITIALIZATION AND SANITY CHECKS
     require(msg.sender == rollupProcessor, "MStableBridge: INVALID_CALLER");
+    console.log("check assets", inputAssetA.id, outputAssetA.id);
     require(
       inputAssetA.id != outputAssetA.id,
       "MStableBridge: ASSET_IDS_EQUAL"
@@ -65,16 +65,19 @@ contract MStableBridge is IDefiBridge {
         address(mUSD),
         totalInputValue
       );
+      console.log("approved");
 
-      uint256 minimumMUSDToMint = totalInputValue * (1-auxData);
+      uint256 minimumMUSDToMint = totalInputValue * ((uint256(1000) - uint256(auxData)))/1000;
+      console.log("calculate mint amount", minimumMUSDToMint);
       uint256 massetsMinted = IMStableAsset(mUSD).mint(bAsset, totalInputValue, minimumMUSDToMint, address(this)); // Minting
-
+      console.log("about to approve credits", massetsMinted);
       ERC20(mUSD).approve(
         imUSD,
         massetsMinted
       );
-
+      console.log("about to issue credits", massetsMinted);
       uint256 creditsIssued = IMStableSavingsContract(imUSD).depositSavings(massetsMinted); // Deposit into save
+      console.log("issued");
 
       ERC20(imUSD).approve(
         rollupProcessor,
@@ -82,7 +85,7 @@ contract MStableBridge is IDefiBridge {
       );
     } else {
         uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemUnderlying(totalInputValue); // Redeem mUSD from save
-        uint256 minimumBAssetToRedeem = redeemedMUSD * (1-auxData);
+        uint256 minimumBAssetToRedeem = redeemedMUSD * ((uint256(1000) - uint256(auxData)))/1000;
         uint256 outputAmount = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, minimumBAssetToRedeem, address(this)); // Redeem bAsset from mUSD
         
         ERC20(bAsset).approve(

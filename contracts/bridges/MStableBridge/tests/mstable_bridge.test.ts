@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import DefiBridgeProxy from "../../../../src/artifacts/contracts/DefiBridgeProxy.sol/DefiBridgeProxy.json";
-import { Contract, Signer, ContractFactory } from "ethers";
+import { Contract, Signer, ContractFactory, BigNumber } from "ethers";
 import {
   AztecAssetType,
   RollupProcessor,
@@ -8,9 +8,16 @@ import {
 
 import { MStableBridge } from "../../../../typechain-types";
 
-const fixEthersStackTrace = (err: Error) => {
-  err.stack! += new Error().stack;
-  throw err;
+const toBytes32 = (bn: BigNumber) => {
+  return ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
+};
+
+const setStorageAt = async (address: string, index: string, value: string) => {
+  const newIndex = 1
+  console.log("hardhat storage", address, index, value)
+  await ethers.provider.send("hardhat_setStorageAt", [address, newIndex, value]);
+  console.log("evm mine")
+  await ethers.provider.send("evm_mine", []); // Just mines to the next block
 };
 
 describe("defi bridge", function () {
@@ -75,40 +82,32 @@ describe("defi bridge", function () {
       {},
       quantityOfDaiToDeposit,
       1n,
-      0n
+      100n
     );
-  });
 
-  it("should call convert successfully from imUSD -> DAI on the DeFi bridge", async () => {
-    const inputAsset = {
+    const imUSDinputAsset = {
       assetId: 2,
       erc20Address: imUSDAddress,
       assetType: AztecAssetType.ERC20,
     };
-    const outputAsset = {
+    const daiOutputAsset = {
       assetId: 1,
       erc20Address: daiAddress,
       assetType: AztecAssetType.ERC20,
     };
 
-    const quantityOfIMUSDToDeposit = 1n * 10n ** 21n;
-    // get DAI into the rollup contract
-    await rollupContract.preFundContractWithToken(signer, {
-      erc20Address: imUSDAddress,
-      amount: quantityOfIMUSDToDeposit,
-      name: "imUSD",
-    });
+    console.log("2nd convert")
 
     await rollupContract.convert(
       signer,
       mStableBridge.address,
-      inputAsset,
+      imUSDinputAsset,
       {},
-      outputAsset,
+      daiOutputAsset,
       {},
-      quantityOfIMUSDToDeposit,
-      1n,
-      0n
+      quantityOfDaiToDeposit,
+      2n,
+      100n
     );
   });
 });
