@@ -45,8 +45,8 @@ contract MStableBridge is IDefiBridge {
     // ### INITIALIZATION AND SANITY CHECKS
     require(msg.sender == rollupProcessor, "MStableBridge: INVALID_CALLER");
     require(
-      inputAssetA.id == outputAssetA.id,
-      "MStableBridge: ASSET_IDS_NOT_EQUAL"
+      inputAssetA.id != outputAssetA.id,
+      "MStableBridge: ASSET_IDS_EQUAL"
     );
 
     require(
