@@ -48,7 +48,6 @@ contract MStableBridge is IDefiBridge {
       inputAssetA.id != outputAssetA.id,
       "MStableBridge: ASSET_IDS_EQUAL"
     );
-
     require(
       inputAssetA.assetType == AztecTypes.AztecAssetType.ERC20,
       "MStableBridge: NOT_ERC20"
@@ -69,8 +68,14 @@ contract MStableBridge is IDefiBridge {
 
       uint256 minimumMUSDToMint = totalInputValue * (1-auxData);
       uint256 massetsMinted = IMStableAsset(mUSD).mint(bAsset, totalInputValue, minimumMUSDToMint, address(this)); // Minting
+
+      ERC20(mUSD).approve(
+        imUSD,
+        massetsMinted
+      );
+
       uint256 creditsIssued = IMStableSavingsContract(imUSD).depositSavings(massetsMinted); // Deposit into save
-      
+
       ERC20(imUSD).approve(
         rollupProcessor,
         creditsIssued
