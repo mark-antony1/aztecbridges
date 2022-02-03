@@ -5,51 +5,21 @@ pragma experimental ABIEncoderV2;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { IVault, IAsset, PoolSpecialization } from "../../interfaces/IVault.sol";
-import { ITranche } from "../../interfaces/ITranche.sol";
-import { IERC20Permit, IERC20 } from "../../interfaces/IERC20Permit.sol";
-import { IWrappedPosition } from "../../interfaces/IWrappedPosition.sol";
-import { IRollupProcessor } from "../../interfaces/IRollupProcessor.sol";
-import { IMStableSaveWrapper } from "../../interfaces/IMStableSaveWrapper.sol";
-
+import { IMStableAsset } from "../../interfaces/IMStableAsset.sol";
+import { IMStableSavingsContract } from "../../interfaces/IMStableSavingsContract.sol";
 import { IDefiBridge } from "../../interfaces/IDefiBridge.sol";
-
 import { AztecTypes } from "../../AztecTypes.sol";
 
 import "hardhat/console.sol";
 
 contract MStableBridge is IDefiBridge {
-  // capture the minimum info required to recall a deposit
-  struct Interaction {
-    address trancheAddress;
-    uint64 expiry;
-    uint256 quantityPT;
-    bool finalised;
-  }
-
-  // minimum info required to execute a deposit
-  struct Pool {
-    address trancheAddress;
-    address poolAddress;
-    bytes32 poolId;
-  }
-
-  // cache of all of our Defi interactions. keyed on nonce
-  mapping(uint256 => Interaction) private interactions;
-
   // the aztec rollup processor contract
   address public immutable rollupProcessor;
-  address public saveWrapper;
-  address public boostedSavingsVault;
 
   constructor(
-    address _rollupProcessor,
-    address _saveWrapper,
-    address _boostedSavingsVault,
+    address _rollupProcessor
   ) {
     rollupProcessor = _rollupProcessor;
-    saveWrapper = _saveWrapper;
-    boostedSavingsVault = _boostedSavingsVault;
   }
 
   // convert the input asset to the output asset
@@ -83,33 +53,38 @@ contract MStableBridge is IDefiBridge {
       inputAssetA.assetType == AztecTypes.AztecAssetType.ERC20,
       "MStableBridge: NOT_ERC20"
     );
-    require(
-      interactions[interactionNonce].expiry == 0,
-      "MStableBridge: INTERACTION_ALREADY_EXISTS"
-    );
     // operation is asynchronous
     isAsync = false;
 
-    // approve the transfer of tokens to the balancer address
-    ERC20(inputAssetA.erc20Address).approve(
-      address(saveWrapper),
-      totalInputValue
-    );
-    // execute the save on mStable via the save wrapper
-    IMStableSaveWrapper(saveWrapper).saveViaMint(
-      address(0xe2f2a5C287993345a840Db3B0845fbC70f5935a5),
-      inputAssetA.erc20Address,
-      address(0x30647a72dc82d7fbb1123ea74716ab8a317eac19),
-      _boostedSavingsVault,
-      totalInputValue,
-      totalInputValue,
-      true
-    ;
+    address mUSD = address(0xe2f2a5C287993345a840Db3B0845fbC70f5935a5);
+    address imUSD = address(0x30647a72Dc82d7Fbb1123EA74716aB8A317Eac19);
+    address bAsset = inputAssetA.erc20Address;
 
-    ERC20(0x30647a72dc82d7fbb1123ea74716ab8a317eac19).approve(
-      rollupProcessor,
-      totalInputValue
-    );
+    if (outputAssetA.erc20Address == imUSD) {
+      // approve the transfer of tokens to the balancer address
+      ERC20(inputAssetA.erc20Address).approve(
+        address(mUSD),
+        totalInputValue
+      );
+
+      uint256 minimumMUSDToMint = totalInputValue * (1-auxData);
+      uint256 massetsMinted = IMStableAsset(mUSD).mint(bAsset, totalInputValue, minimumMUSDToMint, address(this)); // Minting
+      uint256 creditsIssued = IMStableSavingsContract(imUSD).depositSavings(massetsMinted); // Deposit into save
+      
+      ERC20(imUSD).approve(
+        rollupProcessor,
+        creditsIssued
+      );
+    } else {
+        uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemUnderlying(totalInputValue); // Redeem mUSD from save
+        uint256 minimumBAssetToRedeem = redeemedMUSD * (1-auxData);
+        uint256 outputAmount = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, minimumBAssetToRedeem, address(this)); // Redeem bAsset from mUSD
+        
+        ERC20(bAsset).approve(
+          rollupProcessor,
+          outputAmount
+        );
+    }
   }
 
   function canFinalise(

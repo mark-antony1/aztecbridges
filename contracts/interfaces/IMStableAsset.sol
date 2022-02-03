@@ -10,4 +10,10 @@ interface IMStableAsset {
 		uint256 _minOutputQuantity, 
 		address _recipient
 		) external returns (uint256 mintOutput);
+	function redeem (
+		address _output, 
+		uint256 _mAssetQuantity,
+		uint256 _minOutputQuantity,
+		address _recipient
+	) external returns (uint256 outputQuantity);
 }
