@@ -5,40 +5,14 @@ pragma experimental ABIEncoderV2;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { IVault, IAsset, PoolSpecialization } from "../../interfaces/IVault.sol";
-import { ITranche } from "../../interfaces/ITranche.sol";
-import { IERC20Permit, IERC20 } from "../../interfaces/IERC20Permit.sol";
-import { IWrappedPosition } from "../../interfaces/IWrappedPosition.sol";
-import { IRollupProcessor } from "../../interfaces/IRollupProcessor.sol";
-import { IMStableSaveWrapper } from "../../interfaces/IMStableSaveWrapper.sol";
 import { IMStableAsset } from "../../interfaces/IMStableAsset.sol";
 import { IMStableSavingsContract } from "../../interfaces/IMStableSavingsContract.sol";
-
 import { IDefiBridge } from "../../interfaces/IDefiBridge.sol";
-
 import { AztecTypes } from "../../AztecTypes.sol";
 
 import "hardhat/console.sol";
 
 contract MStableBridge is IDefiBridge {
-  // capture the minimum info required to recall a deposit
-  struct Interaction {
-    address trancheAddress;
-    uint64 expiry;
-    uint256 quantityPT;
-    bool finalised;
-  }
-
-  // minimum info required to execute a deposit
-  struct Pool {
-    address trancheAddress;
-    address poolAddress;
-    bytes32 poolId;
-  }
-
-  // cache of all of our Defi interactions. keyed on nonce
-  mapping(uint256 => Interaction) private interactions;
-
   // the aztec rollup processor contract
   address public immutable rollupProcessor;
 
