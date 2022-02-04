@@ -6,6 +6,7 @@ pragma experimental ABIEncoderV2;
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { IDefiBridge } from "./interfaces/IDefiBridge.sol";
 import { AztecTypes } from "./AztecTypes.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import { TokenTransfers } from "./libraries/TokenTransfers.sol";
 
@@ -124,7 +125,8 @@ contract DefiBridgeProxy {
     )
   {
     if (inputAssetA.assetType == AztecTypes.AztecAssetType.ERC20) {
-      console.log("In defi bridge proxy", inputAssetA.erc20Address);
+      console.log("In defi bridge proxy about to transfer", inputAssetA.erc20Address);
+      console.log("balance here", ERC20(inputAssetA.erc20Address).balanceOf(address(this)));
       // Transfer totalInputValue to the bridge contract if erc20. ETH is sent on call to convert.
       TokenTransfers.safeTransferTo(
         inputAssetA.erc20Address,
