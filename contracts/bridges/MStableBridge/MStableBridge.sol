@@ -48,6 +48,7 @@ contract MStableBridge is IDefiBridge {
       inputAssetA.id != outputAssetA.id,
       "MStableBridge: ASSET_IDS_EQUAL"
     );
+    console.log("check ERC20");
     require(
       inputAssetA.assetType == AztecTypes.AztecAssetType.ERC20,
       "MStableBridge: NOT_ERC20"
