@@ -1,3 +1,4 @@
+import chai, { expect } from "chai";
 import hre, { ethers } from "hardhat";
 import DefiBridgeProxy from "../../../../src/artifacts/contracts/DefiBridgeProxy.sol/DefiBridgeProxy.json";
 import { Contract, Signer, ContractFactory, BigNumber } from "ethers";
@@ -95,7 +96,7 @@ describe("defi bridge", function () {
     });
 
     console.log("########## 1st TEST CASE:first convert ###################")
-    await rollupContract.convert(
+    let { outputValueA } = await rollupContract.convert(
       signer,
       mStableBridge.address,
       inputAsset,
@@ -107,18 +108,23 @@ describe("defi bridge", function () {
       100n
     );
 
+    expect(Number(outputValueA)).to.be.above(Number(quantityOfDaiToDeposit)*(10000/(101+10000)))
+
     console.log("########## 1st TEST CASE:second convert ###################")
-    await rollupContract.convert(
+    let result = await rollupContract.convert(
       signer,
       mStableBridge.address,
       outputAsset,
       {},
       inputAsset,
       {},
-      1n,
+      10000n,
       2n,
       100n
     );
+
+    expect(Number(result.outputValueA)).to.be.above(Number(10000)*(10000/(101+10000)))
+
   });
 
   it("should call convert successfully from imUSD -> DAI on the DeFi bridge", async () => {    
