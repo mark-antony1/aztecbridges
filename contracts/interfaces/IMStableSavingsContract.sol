@@ -10,4 +10,5 @@ interface IMStableSavingsContract {
 	function redeemUnderlying (
 		uint256 _underlying
 	) external returns (uint256 creditsBurned);
+	function balanceOf () external returns (uint256);
 }

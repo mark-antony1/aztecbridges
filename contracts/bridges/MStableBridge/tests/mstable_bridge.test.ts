@@ -121,18 +121,7 @@ describe("defi bridge", function () {
     );
   });
 
-  it("should call convert successfully from imUSD -> DAI on the DeFi bridge", async () => {
-    const inputAsset = {
-      assetId: 2,
-      erc20Address: imUSDAddress,
-      assetType: AztecAssetType.ERC20,
-    };
-    const outputAsset = {
-      assetId: 1,
-      erc20Address: daiAddress,
-      assetType: AztecAssetType.ERC20,
-    };
-    
+  it("should call convert successfully from imUSD -> DAI on the DeFi bridge", async () => {    
     // const locallyManipulatedBalance = ethers.utils.parseUnits("10000000");
     // const slot = 51;
     // // Get storage slot index
@@ -151,15 +140,15 @@ describe("defi bridge", function () {
       "ERC20",
       "0x30647a72Dc82d7Fbb1123EA74716aB8A317Eac19"
     );
-    const SWAP_AMOUNT = "100";
-    const amount = ethers.utils.parseUnits(
-      SWAP_AMOUNT,
-      await token1Contract.decimals()
-    );
-    const quantityOfIMUSDToDeposit = 1n * 10n ** 21n;
-    console.log("about to fund with", token1Contract.address)
-    fundERC20FromAccount(token1Contract, defiBridgeProxy.address, rollupContract.address, amount)
-    fundERC20FromAccount(token1Contract, rollupContract.address, defiBridgeProxy.address, amount)
+    // const SWAP_AMOUNT = "100";
+    // const amount = ethers.utils.parseUnits(
+    //   SWAP_AMOUNT,
+    //   await token1Contract.decimals()
+    // );
+    // const quantityOfIMUSDToDeposit = 1n * 10n ** 21n;
+    // console.log("about to fund with", token1Contract.address)
+    // fundERC20FromAccount(token1Contract, defiBridgeProxy.address, rollupContract.address, amount)
+    // fundERC20FromAccount(token1Contract, rollupContract.address, defiBridgeProxy.address, amount)
     const rollupBalance = await token1Contract.balanceOf(
       rollupContract.address
     );
@@ -170,12 +159,12 @@ describe("defi bridge", function () {
     console.log("proxyBalance", proxyBalance.toString())
 
     const imUSDinputAsset = {
-      assetId: 2,
+      id: 2,
       erc20Address: imUSDAddress,
       assetType: AztecAssetType.ERC20,
     };
     const daiOutputAsset = {
-      assetId: 1,
+      id: 1,
       erc20Address: daiAddress,
       assetType: AztecAssetType.ERC20,
     };

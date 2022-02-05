@@ -76,21 +76,26 @@ contract MStableBridge is IDefiBridge {
         massetsMinted
       );
       console.log("about to issue credits", massetsMinted);
-      uint256 creditsIssued = IMStableSavingsContract(imUSD).depositSavings(massetsMinted); // Deposit into save
+      outputValueA = IMStableSavingsContract(imUSD).depositSavings(massetsMinted); // Deposit into save
       console.log("issued");
 
       ERC20(imUSD).approve(
         rollupProcessor,
-        creditsIssued
+        outputValueA
       );
     } else {
+        console.log("total input value", totalInputValue);
+        uint256 balance = IMStableSavingsContract(imUSD).balanceOf();
+        console.log("balance", balance);
         uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemUnderlying(totalInputValue); // Redeem mUSD from save
+        console.log("redeemedMUSD", redeemedMUSD);
         uint256 minimumBAssetToRedeem = redeemedMUSD * ((uint256(1000) - uint256(auxData)))/1000;
-        uint256 outputAmount = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, minimumBAssetToRedeem, address(this)); // Redeem bAsset from mUSD
-        
+        outputValueA = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, minimumBAssetToRedeem, address(this)); // Redeem bAsset from mUSD
+        console.log("outputValueA", outputValueA);
+
         ERC20(bAsset).approve(
           rollupProcessor,
-          outputAmount
+          outputValueA
         );
     }
   }
