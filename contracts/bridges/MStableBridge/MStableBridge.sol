@@ -43,12 +43,12 @@ contract MStableBridge is IDefiBridge {
     console.log("In contract");
     // ### INITIALIZATION AND SANITY CHECKS
     require(msg.sender == rollupProcessor, "MStableBridge: INVALID_CALLER");
-    console.log("check assets", inputAssetA.id, outputAssetA.id);
+    
     require(
       inputAssetA.id != outputAssetA.id,
       "MStableBridge: ASSET_IDS_EQUAL"
     );
-    console.log("check ERC20");
+    
     require(
       inputAssetA.assetType == AztecTypes.AztecAssetType.ERC20,
       "MStableBridge: NOT_ERC20"
@@ -86,8 +86,8 @@ contract MStableBridge is IDefiBridge {
       );
     } else {
         console.log("total input value", totalInputValue);
-        uint256 balance = IMStableSavingsContract(imUSD).balanceOf();
-        console.log("balance", balance);
+        uint256 balance = IMStableSavingsContract(imUSD).balanceOf(address(this));
+        console.log("balance", balance, totalInputValue);
         uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemUnderlying(totalInputValue); // Redeem mUSD from save
         console.log("redeemedMUSD", redeemedMUSD);
         uint256 minimumBAssetToRedeem = redeemedMUSD * ((uint256(1000) - uint256(auxData)))/1000;

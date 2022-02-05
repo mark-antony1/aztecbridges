@@ -24,17 +24,14 @@ export async function fundERC20FromAccount(
   to: string,
   amount: BigNumber
 ) {
-  console.log("impersonate")
   await hre.network.provider.request({
     method: "hardhat_impersonateAccount",
     params: [from],
   });
-  console.log("set balance")
   await hre.network.provider.send("hardhat_setBalance", [
     from,
     ethers.utils.hexStripZeros(ethers.utils.parseEther("100.0").toHexString()),
   ]);
-  console.log("hre transfer")
   const holder = await ethers.getSigner(from);
   await erc20.connect(holder).transfer(to, amount);
   await hre.network.provider.request({
@@ -166,7 +163,7 @@ describe("defi bridge", function () {
       "ERC20",
       "0x30647a72Dc82d7Fbb1123EA74716aB8A317Eac19"
     );
-    const SWAP_AMOUNT = "100";
+    const SWAP_AMOUNT = "1000000";
     const amount = ethers.utils.parseUnits(
       SWAP_AMOUNT,
       await token1Contract.decimals()
@@ -205,7 +202,7 @@ describe("defi bridge", function () {
       {},
       daiOutputAsset,
       {},
-      1n,
+      1000000n,
       2n,
       100n
     );

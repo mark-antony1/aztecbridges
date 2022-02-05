@@ -97,11 +97,9 @@ export class RollupProcessor {
 
     */
 
-    console.log("real convert call")
-    console.log("bridgeAddress", bridgeAddress, "totalInputValue", totalInputValue, "interactionNonce", interactionNonce, "auxInputData", auxInputData)
+    console.log("real convert call", "bridgeAddress", bridgeAddress, "totalInputValue", totalInputValue, "interactionNonce", interactionNonce, "auxInputData", auxInputData)
     console.log("inputAssetA", inputAssetA, "inputAssetB", inputAssetB)
     console.log("outputAssetA", outputAssetA, "outputAssetB", outputAssetB)
-    console.log("gasLimit", gasLimit, "gasPrice", gasPrice)
     const tx = await contract.convert(
       bridgeAddress,
       assetToArray(inputAssetA),
