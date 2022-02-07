@@ -16,4 +16,5 @@ interface IMStableAsset {
 		uint256 _minOutputQuantity,
 		address _recipient
 	) external returns (uint256 outputQuantity);
+	function balanceOf (address account) external returns (uint256);
 }

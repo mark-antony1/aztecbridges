@@ -87,10 +87,12 @@ contract MStableBridge is IDefiBridge {
     } else {
         console.log("total input value", totalInputValue);
         uint256 balance = IMStableSavingsContract(imUSD).balanceOf(address(this));
-        console.log("balance", balance, totalInputValue);
-        uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemUnderlying(totalInputValue); // Redeem mUSD from save
-        console.log("redeemedMUSD", redeemedMUSD);
+        console.log("balance", balance, totalInputValue, balance == totalInputValue);
+        uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemCredits(totalInputValue);
         uint256 minimumBAssetToRedeem = redeemedMUSD * ((uint256(1000) - uint256(auxData)))/1000;
+        console.log("minimumBAssetToRedeem about to check balance of musd", minimumBAssetToRedeem);
+        uint256 mUSDBalance = IMStableAsset(mUSD).balanceOf(address(this));
+        console.log("musd balance", mUSDBalance, "redeemedMUSD", redeemedMUSD);
         outputValueA = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, minimumBAssetToRedeem, address(this)); // Redeem bAsset from mUSD
         console.log("outputValueA", outputValueA);
 
