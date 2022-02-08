@@ -144,7 +144,6 @@ contract AaveLendingBridge is IDefiBridge {
       bool isAsync
     )
   {
-    console.log("here", totalInputValue);
     // ### INITIALIZATION AND SANITY CHECKS
     require(msg.sender == rollupProcessor, "AaveLendingBridge: INVALID_CALLER");
     require(
@@ -159,12 +158,9 @@ contract AaveLendingBridge is IDefiBridge {
     address zkAtokenAddress = underlyingToZkAToken[inputAssetA.erc20Address];
     if (zkAtokenAddress == address(0)) {
       // we are withdrawing zkATokens for underlying
-      console.log("exit", zkAtokenAddress);
       outputValueA = _exit(outputAssetA.erc20Address, totalInputValue);
     } else {
       // we are depositing underlying for zkATokens
-      console.log("enter", zkAtokenAddress);
-
       outputValueA = _enter(inputAssetA.erc20Address, totalInputValue);
     }
   }
@@ -189,13 +185,9 @@ contract AaveLendingBridge is IDefiBridge {
     // 1. Read the scaled balance from the lending pool
 
     uint256 scaledBalance = aToken.scaledBalanceOf(address(this));
-    console.log("scaled balance", scaledBalance);
     // 2. Approve totalInputValue to be lent on AAVE
-    console.log("asset", inputAsset);
-    console.log("balance", IERC20Detailed(inputAsset).balanceOf(address(this)));
 
     IERC20Detailed(inputAsset).approve(address(pool), amount);
-    console.log("approve", amount);
 
     // 3. Lend totalInputValue of inputAssetA on AAVE lending pool
 
@@ -209,7 +201,6 @@ contract AaveLendingBridge is IDefiBridge {
       rollupProcessor,
       diff
     );
-    console.log("approved", diff);
     return diff;
   }
 

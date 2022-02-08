@@ -121,7 +121,6 @@ contract MockRollupProcessor {
         interaction.interactionNonce,
         uint64(interaction.auxInputData)
       );
-    console.log("Completed");
 
     if (
       outputValueB > 0 &&
@@ -138,7 +137,6 @@ contract MockRollupProcessor {
         interaction.interactionNonce
       );
     } else {
-      console.log("Transferring");
       // transfer output tokens to rollup contract
       transferTokensAsync(
         address(interaction.bridgeAddress),
@@ -152,7 +150,6 @@ contract MockRollupProcessor {
         outputValueB,
         interaction.interactionNonce
       );
-      console.log("Transferred");
     }
 
     emit AztecBridgeInteraction(

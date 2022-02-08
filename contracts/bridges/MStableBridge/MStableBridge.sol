@@ -10,8 +10,6 @@ import { IMStableSavingsContract } from "../../interfaces/IMStableSavingsContrac
 import { IDefiBridge } from "../../interfaces/IDefiBridge.sol";
 import { AztecTypes } from "../../AztecTypes.sol";
 
-import "hardhat/console.sol";
-
 contract MStableBridge is IDefiBridge {
   // the aztec rollup processor contract
   address public immutable rollupProcessor;
@@ -40,7 +38,6 @@ contract MStableBridge is IDefiBridge {
       bool isAsync
     )
   {
-    console.log("In contract");
     // ### INITIALIZATION AND SANITY CHECKS
     require(msg.sender == rollupProcessor, "MStableBridge: INVALID_CALLER");
     
@@ -58,45 +55,34 @@ contract MStableBridge is IDefiBridge {
 
     address mUSD = address(0xe2f2a5C287993345a840Db3B0845fbC70f5935a5);
     address imUSD = address(0x30647a72Dc82d7Fbb1123EA74716aB8A317Eac19);
-    address bAsset = inputAssetA.erc20Address;
+    address dai = address(0x6B175474E89094C44Da98b954EedeAC495271d0F);
 
     if (outputAssetA.erc20Address == imUSD) {
-      // approve the transfer of tokens to the balancer address
       ERC20(inputAssetA.erc20Address).approve(
         address(mUSD),
         totalInputValue
       );
-      console.log("approved");
 
-      uint256 minimumMUSDToMint = totalInputValue * ((uint256(1000) - uint256(auxData)))/1000;
-      console.log("calculate mint amount", minimumMUSDToMint);
-      uint256 massetsMinted = IMStableAsset(mUSD).mint(bAsset, totalInputValue, minimumMUSDToMint, address(this)); // Minting
-      console.log("about to approve credits", massetsMinted);
+      uint256 minimumMUSDToMint = totalInputValue * ((uint256(10000) - uint256(auxData)))/10000;
+      uint256 massetsMinted = IMStableAsset(mUSD).mint(dai, totalInputValue, minimumMUSDToMint, address(this)); // Minting
+
       ERC20(mUSD).approve(
         imUSD,
         massetsMinted
       );
-      console.log("about to issue credits", massetsMinted);
+
       outputValueA = IMStableSavingsContract(imUSD).depositSavings(massetsMinted); // Deposit into save
-      console.log("issued");
 
       ERC20(imUSD).approve(
         rollupProcessor,
         outputValueA
       );
     } else {
-        console.log("total input value", totalInputValue);
-        uint256 balance = IMStableSavingsContract(imUSD).balanceOf(address(this));
-        console.log("balance", balance, totalInputValue, balance == totalInputValue);
         uint256 redeemedMUSD = IMStableSavingsContract(imUSD).redeemCredits(totalInputValue);
-        uint256 minimumBAssetToRedeem = redeemedMUSD * ((uint256(1000) - uint256(auxData)))/1000;
-        console.log("minimumBAssetToRedeem about to check balance of musd", minimumBAssetToRedeem);
-        uint256 mUSDBalance = IMStableAsset(mUSD).balanceOf(address(this));
-        console.log("musd balance", mUSDBalance, "redeemedMUSD", redeemedMUSD);
-        outputValueA = IMStableAsset(mUSD).redeem(bAsset, redeemedMUSD, minimumBAssetToRedeem, address(this)); // Redeem bAsset from mUSD
-        console.log("outputValueA", outputValueA);
-
-        ERC20(bAsset).approve(
+        uint256 minimumBAssetToRedeem = redeemedMUSD * ((uint256(10000) - uint256(auxData)))/10000;
+        uint256 redeemedValue = IMStableAsset(mUSD).redeem(dai, redeemedMUSD, minimumBAssetToRedeem, address(this));
+        outputValueA = redeemedValue;
+        ERC20(dai).approve(
           rollupProcessor,
           outputValueA
         );
