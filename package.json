@@ -17,9 +17,7 @@
       "^.+\\.ts$": "ts-jest"
     },
     "testRegex": ".*\\.test\\.ts$",
-    "rootDir": "./contracts",
-    "testTimeout": 200000,
-    "slowTestThreshold": 60
+    "rootDir": "./src"
   },
   "dependencies": {
     "@ethersproject/experimental": "5.0.9",

@@ -46,7 +46,7 @@ export class MStableBridgeData {
     outputAssetA: AztecAsset,
     outputAssetB: AztecAsset,
   ): Promise<bigint[]> {
-    return (await [100n]);
+    return (await [50n]);
   }
 
   public auxDataConfig: AuxDataConfig[] = [
