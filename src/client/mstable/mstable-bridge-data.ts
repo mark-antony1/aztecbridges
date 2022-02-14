@@ -1,6 +1,5 @@
-import { AddressZero } from '@ethersproject/constants';
-
-import { AsyncYieldBridgeData, AuxDataConfig, AztecAsset, SolidityType } from '../bridge-data';
+import axios from 'axios'
+import { AuxDataConfig, AztecAsset, SolidityType } from '../bridge-data';
 import { MStableBridge, IRollupProcessor, IMStableSavingsContract, IMStableAsset } from '../../../typechain-types';
 
 export type BatchSwapStep = {
@@ -84,44 +83,8 @@ export class MStableBridgeData {
     outputAssetB: AztecAsset,
     auxData: bigint,
     precision: bigint,
-  ): Promise<bigint[]> {
-		return [0n]
-    // const assetExpiryHash = await this.mStableBridgeContract.hashAssetAndExpiry(inputAssetA.erc20Address, auxData);
-    // const pool = await this.mStableBridgeContract.pools(assetExpiryHash);
-    // const poolId = pool[2];
-    // const trancheAddress = pool[0];
-
-    // const funds: FundManagement = {
-    //   sender: AddressZero,
-    //   recipient: AddressZero,
-    //   fromInternalBalance: false,
-    //   toInternalBalance: false,
-    // };
-
-    // const step: BatchSwapStep = {
-    //   poolId,
-    //   assetInIndex: 0,
-    //   assetOutIndex: 1,
-    //   amount: precision.toString(),
-    //   userData: '0x',
-    // };
-
-    // const deltas = await this.balancerContract.queryBatchSwap(
-    //   SwapType.SwapExactIn,
-    //   [step],
-    //   [inputAssetA.erc20Address, trancheAddress],
-    //   funds,
-    // );
-
-    // const outputAssetAValue = deltas[1];
-
-    // const timeToExpiration = auxData - BigInt(Date.now());
-
-    // const YEAR = 60 * 60 * 24 * 365;
-    // const interest = BigInt(-outputAssetAValue.toBigInt() - precision);
-    // const scaledOutput = (interest * this.scalingFactor) / BigInt(timeToExpiration);
-    // const yearlyOutput = (scaledOutput * BigInt(YEAR)) / this.scalingFactor;
-
-    // return [yearlyOutput + precision, 0n];
+  ): Promise<number[]> {
+    let res = await axios('https://api.mstable.org/pools')
+		return [(1+(res.data.pools[2].apy/100))]
   }
 }

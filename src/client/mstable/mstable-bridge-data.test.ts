@@ -157,15 +157,6 @@ describe('element bridge data', () => {
         pools: jest.fn().mockResolvedValue([trancheAddress, '', poolId]),
       };
 
-    mStableAsset = {
-      ...mStableAsset,
-      // queryBatchSwap: jest.fn().mockImplementation((...args) => {
-      //   const amount = args[1][0].amount;
-
-      //   return Promise.resolve([BigNumber.from(BigInt(amount)), BigNumber.from(-BigInt(BigInt(amount) + exchangeRateOutput))]);
-      // }),
-    };
-
     const mStableBridgeData = new MStableBridgeData(
       mStableBridge as any,
       mStableAsset as any,
@@ -201,6 +192,6 @@ describe('element bridge data', () => {
     const scaledOut = (BigInt(exchangeRateOutput) * mStableBridgeData.scalingFactor) / timeToExpiration;
     const yearlyOut = (scaledOut * BigInt(YEAR)) / mStableBridgeData.scalingFactor;
 
-    expect(output[0]).toBe(BigInt(0));
+    expect(output[0]).toBeGreaterThan(1);
   });
 });
