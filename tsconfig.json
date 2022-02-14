@@ -14,8 +14,9 @@
     "experimentalDecorators": true,
     "inlineSourceMap": true,
     "declarationMap": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "suppressImplicitAnyIndexErrors": true
   },
-  "include": ["client", "typechain-types"],
-  "files": ["hardhat.config.ts"]
+  "include": ["./src", "./contracts/bridges", "./typechain-types"],
+  "files": ["./hardhat.config.ts"]
 }

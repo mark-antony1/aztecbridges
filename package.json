@@ -5,15 +5,16 @@
     "compile:typechain": "forge build && hardhat compile ",
     "clean": "rm -rf ./cache ./dest ./out ./artifacts ./typechain-types",
     "test": "yarn test:contracts && yarn test:clients",
-    "test:client": "jest test",
+    "test:client": "jest test NODE_NO_WARNINGS=1 && HARDHAT_VERBOSE=true DEBUG=*",
     "test:contracts": "forge test"
   },
   "dependencies": {
     "@ethersproject/constants": "^5.5.0",
-    "@nomiclabs/hardhat-ethers": "^2.0.4",
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-waffle": "^2.0.2",
     "@openzeppelin/contracts": "^4.4.2",
     "@typechain/ethers-v4": "^7.0.0",
+    "axios": "^0.26.0",
     "crypto": "^1.0.1",
     "ethers": "^5.5.4",
     "hardhat": "^2.8.3",
@@ -25,7 +26,9 @@
       "^.+\\.ts$": "ts-jest"
     },
     "testRegex": ".*\\.test\\.ts$",
-    "rootDir": "./src"
+    "rootDir": "./src/test",
+    "testTimeout": 200000,
+    "slowTestThreshold": 60
   },
   "name": "aztec-connect-bridges",
   "version": "1.0.0",
