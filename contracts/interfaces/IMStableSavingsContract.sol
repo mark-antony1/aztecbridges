@@ -12,4 +12,5 @@ interface IMStableSavingsContract {
 	) external returns (uint256 creditsBurned);
 	function balanceOf (address account) external returns (uint256);
 	function redeemCredits (uint256 _credits) external returns (uint256 massetReturned);
+	function exchangeRate() external returns (uint256 exchangeRate);
 }

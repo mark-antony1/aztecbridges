@@ -19,4 +19,5 @@ interface IMStableAsset {
 	function balanceOf (address account) external returns (uint256);
 	function bAssetPersonal (uint256 input) external returns (address, address, bool, uint8);
 	function getMintOutput (address _input, uint256 _inputQuantity) external returns (uint256 mintOutput);
+	function getRedeemOutput (address _output, uint256 _mAssetQuantity) external returns (uint256 bAssetOutput);
 }

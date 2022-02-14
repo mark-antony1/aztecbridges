@@ -24,7 +24,7 @@ export type FundManagement = {
 };
 
 export class MStableBridgeData {
-  private elementBridgeContract: MStableBridge;
+  private mStableBridgeContract: MStableBridge;
   private rollupContract: IRollupProcessor;
   private mStableSavingsContract: IMStableSavingsContract;
 	private mStableAssetContract: IMStableAsset
@@ -33,8 +33,8 @@ export class MStableBridgeData {
 
   public scalingFactor = 1000000000n;
 
-  constructor(elementBridge: MStableBridge, mStableSavings: IMStableSavingsContract, rollupContract: IRollupProcessor, mStableAsset: IMStableAsset) {
-    this.elementBridgeContract = elementBridge;
+  constructor(mStableBridge: MStableBridge, mStableSavings: IMStableSavingsContract, rollupContract: IRollupProcessor, mStableAsset: IMStableAsset) {
+    this.mStableBridgeContract = mStableBridge;
     this.rollupContract = rollupContract;
     this.mStableSavingsContract = mStableSavings;
 		this.mStableAssetContract = mStableAsset
@@ -66,12 +66,14 @@ export class MStableBridgeData {
     auxData: bigint,
     precision: bigint,
   ): Promise<bigint[]> {
-    // bridge is async the third parameter represents this
     if(inputAssetA.erc20Address === this.dai) {
-			const mintOutput = this.mStableAssetContract.getMintOutput(this.dai, 1)
-			return [0n]
+			const mintOutput = await this.mStableAssetContract.getMintOutput(this.dai, 1n)
+      const exchangeRate = await this.mStableSavingsContract.exchangeRate();
+			return [BigInt( mintOutput[0]._hex)/BigInt(exchangeRate[0]._hex)];
 		} else {
-			return [0n]
+      const exchangeRate = await this.mStableSavingsContract.exchangeRate();
+			const redeemOutput = await this.mStableAssetContract.getRedeemOutput(this.dai, 1n)
+			return [BigInt(exchangeRate[0]._hex)*BigInt(redeemOutput[0]._hex)];
 		}
   }
 
@@ -84,8 +86,8 @@ export class MStableBridgeData {
     precision: bigint,
   ): Promise<bigint[]> {
 		return [0n]
-    // const assetExpiryHash = await this.elementBridgeContract.hashAssetAndExpiry(inputAssetA.erc20Address, auxData);
-    // const pool = await this.elementBridgeContract.pools(assetExpiryHash);
+    // const assetExpiryHash = await this.mStableBridgeContract.hashAssetAndExpiry(inputAssetA.erc20Address, auxData);
+    // const pool = await this.mStableBridgeContract.pools(assetExpiryHash);
     // const poolId = pool[2];
     // const trancheAddress = pool[0];
 
